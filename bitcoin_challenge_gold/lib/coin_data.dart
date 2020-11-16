@@ -13,6 +13,7 @@ const List<String> currenciesList = [
   'IDR',
   'ILS',
   'INR',
+  'JMD',
   'JPY',
   'MXN',
   'NOK',
@@ -32,25 +33,22 @@ const List<String> cryptoList = [
   'LTC',
 ];
 
-const coinAPIURL = 'https://free.currconv.com/api/v7/convert?q=PHP_';
 const apiKey = '541b0bfa2043413ed370';
 
 class CoinData {
   String cryptocurrency;
-  Future getCoinData(String selectedcurrency) async {
+  Future getCoinData(
+      String selectedcurrency, String selectedcryptocurrency) async {
     Map<String, String> cryptoprices = {};
     for (cryptocurrency in cryptoList) {
       String requestURL =
-          '$coinAPIURL${selectedcurrency},${cryptocurrency}_PHP&compact=ultra&apiKey=$apiKey';
+          'https://free.currconv.com/api/v7/convert?q=${cryptocurrency}_$selectedcurrency&compact=ultra&apiKey=$apiKey';
       Response response = await get(requestURL);
       if (response.statusCode == 200) {
         var decodedData = jsonDecode(response.body);
-        double lastPrice = decodedData['PHP_$selectedcurrency'];
-        double lastcryptoprice = decodedData['${cryptocurrency}_PHP'];
+        double lastPrice = decodedData['${cryptocurrency}_$selectedcurrency'];
+
         cryptoprices[cryptocurrency] = lastPrice.toString();
-        cryptoprices[cryptocurrency] = lastcryptoprice.toString();
-        print(lastPrice);
-        print(lastcryptoprice);
       } else {
         print(response.statusCode);
         throw 'Problem with the get request';

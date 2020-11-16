@@ -10,6 +10,7 @@ class PriceScreen extends StatefulWidget {
 
 class _PriceScreenState extends State<PriceScreen> {
   String selectedCurrency = 'AUD';
+  String selectedcryptocurrency = 'BTC';
 
   DropdownButton<String> androidDropdown() {
     List<DropdownMenuItem<String>> dropdownItems = [];
@@ -27,6 +28,28 @@ class _PriceScreenState extends State<PriceScreen> {
       onChanged: (value) {
         setState(() {
           selectedCurrency = value;
+          getData();
+        });
+      },
+    );
+  }
+
+  DropdownButton<String> cryptoDropdown() {
+    List<DropdownMenuItem<String>> dropdownItems = [];
+    for (String cryptocurrency in cryptoList) {
+      var newItem = DropdownMenuItem(
+        child: Text(cryptocurrency),
+        value: cryptocurrency,
+      );
+      dropdownItems.add(newItem);
+    }
+
+    return DropdownButton<String>(
+      value: selectedcryptocurrency,
+      items: dropdownItems,
+      onChanged: (value) {
+        setState(() {
+          selectedcryptocurrency = value;
           getData();
         });
       },
@@ -60,7 +83,8 @@ class _PriceScreenState extends State<PriceScreen> {
   void getData() async {
     iswaiting = true;
     try {
-      var data = await CoinData().getCoinData(selectedCurrency);
+      var data = await CoinData()
+          .getCoinData(selectedCurrency, selectedcryptocurrency);
       iswaiting = false;
       setState(() {
         coinvalues = data;
@@ -76,8 +100,6 @@ class _PriceScreenState extends State<PriceScreen> {
     getData();
   }
 
-  //TODO: For bonus points, create a method that loops through the cryptoList and generates a CryptoCard for each.
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -92,28 +114,25 @@ class _PriceScreenState extends State<PriceScreen> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Cryptocard(
-                value: iswaiting ? '?' : coinvalues['BTC'],
+                value: iswaiting ? '?' : coinvalues[selectedcryptocurrency],
                 selectedCurrency: selectedCurrency,
-                cryptocurrency: 'BTC',
-              ),
-              Cryptocard(
-                value: iswaiting ? '?' : coinvalues['ETH'],
-                selectedCurrency: selectedCurrency,
-                cryptocurrency: 'ETH',
-              ),
-              Cryptocard(
-                value: iswaiting ? '?' : coinvalues['LTC'],
-                selectedCurrency: selectedCurrency,
-                cryptocurrency: 'LTC',
+                cryptocurrency: selectedcryptocurrency,
               ),
             ],
           ),
           Container(
-            height: 150.0,
-            alignment: Alignment.center,
-            padding: EdgeInsets.only(bottom: 30.0),
-            color: Colors.lightBlue,
-            child: Platform.isIOS ? iOSPicker() : androidDropdown(),
+            height: 80.0,
+            padding: EdgeInsets.all(20.0),
+            color: Colors.blue,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: <Widget>[
+                Expanded(
+                  child: androidDropdown(),
+                ),
+                Expanded(child: cryptoDropdown()),
+              ],
+            ),
           ),
         ],
       ),
@@ -144,7 +163,7 @@ class Cryptocard extends StatelessWidget {
         child: Padding(
           padding: EdgeInsets.symmetric(vertical: 15.0, horizontal: 28.0),
           child: Text(
-            '1 BTC = $value $selectedCurrency',
+            '1 $cryptocurrency = $value $selectedCurrency',
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 20.0,
